@@ -52,7 +52,7 @@ function handleConnectWs(ws, url) {
 
     peerConn.on("connect", () => {
         const channel = peerConn._channel;
-        channel.bufferedAmountLowThreshold = 400000;
+        channel.bufferedAmountLowThreshold = 999999999999;
         if (!canSend) return;
     });
 

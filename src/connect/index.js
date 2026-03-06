@@ -82,7 +82,8 @@ function handleConnectWs(ws, url) {
         if (!canSend) return;
         canSend = false;
         isPeerConnected = false;
-        try { ws.close(); client.close(); } catch (e) {}
+        try { ws.close(); } catch (e) {}
+        try { client.close(); } catch (e) {}
         try { peerConn.destroy(); } catch (e) {}
     };
 

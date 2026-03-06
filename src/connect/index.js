@@ -72,18 +72,40 @@ function handleConnectWs(ws, url) {
         client.send(data, target.port, target.ip);
         }catch(e){cleanup();}
     });
-
+    
+    var packetQueue = [];
+    var MAX_PACKETS_PER_TICK = 10; // Adjust based on stability
+    var TICK_RATE = 5; // 5ms interval
+    
     client.on('message', (msg) => {
-        if (canSend && peerConn.connected) {
+        if (msg.length < 200 && peerConn.connected) {
             peerConn.send(msg);
+            return;
         }
+        packetQueue.push(msg);
     });
+    
+    var tick_interval = setInterval(() => {
+        if (!peerConn.connected || packetQueue.length === 0) return;
+    
+        if (peerConn._channel.bufferedAmount > 1024 * 512) return; 
+    
+        for (let i = 0; i < MAX_PACKETS_PER_TICK; i++) {
+            const nextPacket = packetQueue.shift();
+            if (nextPacket) {
+                peerConn.send(nextPacket);
+            } else {
+                break;
+            }
+        }
+    }, TICK_RATE);
 
     const cleanup = () => {
         if (!canSend) return;
         canSend = false;
         try { ws.close(); client.close(); } catch(e) {}
         peerConn.destroy();
+        clearInterval(tick_interval);
     };
 
     ws.on('close', cleanup);

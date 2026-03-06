@@ -5,50 +5,33 @@ var rtcConfig = require("./rtc-config.js");
 
 function parseTarget(targetString) {
     const lastColon = targetString.lastIndexOf(':');
-    
-    // If no colon, assume standard port
-    if (lastColon === -1) {
-        return { ip: targetString.trim(), port: 5029 };
-    }
-
+    if (lastColon === -1) return { ip: targetString.trim(), port: 5029 };
     const ip = targetString.substring(0, lastColon);
-    const portString = targetString.substring(lastColon + 1);
-    const port = parseInt(portString, 10);
-
-    // If port is invalid, default to 5029 but keep the IP
-    if (isNaN(port) || port <= 0 || port > 65535) {
-        return { ip: ip.trim(), port: 5029 };
-    }
-    
-    return { ip, port };
+    const port = parseInt(targetString.substring(lastColon + 1), 10);
+    return (isNaN(port) || port <= 0 || port > 65535) ? { ip: ip.trim(), port: 5029 } : { ip, port };
 }
 
 function handleConnectWs(ws, url) {
-    var target = parseTarget(url); 
+    var target = parseTarget(url);
     if (!target) return;
-    
-    var socketType = target.ip.includes(':') ? 'udp6' : 'udp4';
-    var client = dgram.createSocket(socketType);
+
+    var client = dgram.createSocket(target.ip.includes(':') ? 'udp6' : 'udp4');
     var canSend = true;
-    
+    var packetQueue = [];
+    var isPeerConnected = false;
+
     var peerConn = new peer({
         initiator: true,
         wrtc: wrtc,
         config: rtcConfig,
-        channelConfig: { 
-            ordered: false,
-            maxRetransmits: 0
-        },
-        // Helps with NAT traversal
+        channelConfig: { ordered: false, maxRetransmits: 0 },
         trickle: true
     });
 
     ws.on('message', (message) => {
         try {
             var data = JSON.parse(message);
-            if (data.signal) {
-                peerConn.signal(data.signal);
-            }
+            if (data.signal) peerConn.signal(data.signal);
         } catch (e) {}
     });
 
@@ -57,33 +40,52 @@ function handleConnectWs(ws, url) {
         ws.send(JSON.stringify({ signal: data }));
     });
 
-    ws.send(JSON.stringify({ ready: true }));
-    ws.send(JSON.stringify({ webrtc: true }));
-    
+    // 1. Only signal readiness AFTER the peer is connected
     peerConn.on("connect", () => {
-        const channel = peerConn._channel;
-        channel.bufferedAmountLowThreshold = 99999;
-        if (!canSend) return;
+        isPeerConnected = true;
+        ws.send(JSON.stringify({ ready: true, webrtc: true }));
+        
+        // Drain buffered packets
+        while (packetQueue.length > 0 && isPeerConnected) {
+            safeSend(packetQueue.shift());
+        }
     });
+
+    function safeSend(data) {
+        if (!canSend || !isPeerConnected) return;
+        // 2. Backpressure: Only send if buffer is healthy (< 512KB)
+        if (peerConn._channel && peerConn._channel.bufferedAmount < 512 * 1024) {
+            try { peerConn.send(data); } catch (e) { cleanup(); }
+        } else {
+            // Buffer full: drop or handle as needed
+        }
+    }
 
     peerConn.on("data", (data) => {
         if (!canSend) return;
-        try{
-        client.send(data, target.port, target.ip);
-        }catch(e){cleanup();}
+        try { client.send(data, target.port, target.ip); } catch (e) { cleanup(); }
     });
-    
+
     client.on('message', (msg) => {
         if (!canSend) return;
-        try{peerConn.send(msg);}catch(e){}
+        if (!msg || typeof msg.length === 'undefined') return;
+
+        if (isPeerConnected) {
+            safeSend(msg);
+        } else {
+            // 3. Buffer packets if we aren't connected yet (Add-on support)
+            packetQueue.push(msg);
+        }
     });
 
     const cleanup = () => {
         if (!canSend) return;
         canSend = false;
-        try { ws.close(); client.close(); } catch(e) {}
-        try{peerConn.destroy();}catch(e){}
+        isPeerConnected = false;
+        try { ws.close(); client.close(); } catch (e) {}
+        try { peerConn.destroy(); } catch (e) {}
     };
+
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);
 }

@@ -53,7 +53,7 @@ function handleConnectWs(ws, url) {
     peerConn.on("connect", () => {
         const channel = peerConn._channel;
         channel.bufferedAmountLowThreshold = 999999999999;
-        client.setRecvBufferSize(10 * 1024 * 1024);
+        client.setRecvBufferSize(7 * 1024 * 1024);
         if (!canSend) return;
     });
 

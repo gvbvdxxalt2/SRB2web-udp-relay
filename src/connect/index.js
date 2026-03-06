@@ -58,11 +58,11 @@ function handleConnectWs(ws, url) {
     });
 
     ws.send(JSON.stringify({ ready: true }));
-    ws.send(JSON.stringify({ webrtc: true }));
-
+    
     peerConn.on("connect", () => {
         const channel = peerConn._channel;
-        channel.bufferedAmountLowThreshold = 999999999999;
+        channel.bufferedAmountLowThreshold = 99999;
+        ws.send(JSON.stringify({ webrtc: true }));
         if (!canSend) return;
     });
 
@@ -82,10 +82,9 @@ function handleConnectWs(ws, url) {
         if (!canSend) return;
         canSend = false;
         try { ws.close(); client.close(); } catch(e) {}
-        peerConn.destroy();
+        try{peerConn.destroy();}catch(e){}
         clearInterval(tick_interval);
     };
-    ws.on('close', cleanup);
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);
 }

@@ -40,16 +40,16 @@ function handleConnectWs(ws, url) {
         ws.send(JSON.stringify({ signal: data }));
     });
 
-    // 1. Only signal readiness AFTER the peer is connected
     peerConn.on("connect", () => {
         isPeerConnected = true;
-        ws.send(JSON.stringify({ ready: true, webrtc: true }));
-        
         // Drain buffered packets
         while (packetQueue.length > 0 && isPeerConnected) {
             safeSend(packetQueue.shift());
         }
     });
+
+    ws.send(JSON.stringify({ready: true}));
+    ws.send(JSON.stringify({webrtc: true}));
 
     function safeSend(data) {
         if (!canSend || !isPeerConnected) return;

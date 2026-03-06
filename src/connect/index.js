@@ -74,7 +74,8 @@ function handleConnectWs(ws, url) {
     });
     
     client.on('message', (msg) => {
-        peerConn.send(msg);
+        if (!canSend) return;
+        try{peerConn.send(msg);}catch(e){}
     });
 
     const cleanup = () => {

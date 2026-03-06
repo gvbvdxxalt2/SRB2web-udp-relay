@@ -36,7 +36,7 @@ function handleConnectWs(ws, url) {
         wrtc: wrtc,
         config: rtcConfig,
         channelConfig: { 
-            ordered: true,
+            ordered: false,
             maxRetransmits: 0
         },
         // Helps with NAT traversal

@@ -75,7 +75,7 @@ function handleConnectWs(ws, url) {
     
     var packetQueue = [];
     var MAX_PACKETS_PER_TICK = 3; // Adjust based on stability
-    var TICK_RATE = 5; // 5ms interval
+    var TICK_RATE = 15;
     
     client.on('message', (msg) => {
         if (msg.length < 200 && peerConn.connected) {

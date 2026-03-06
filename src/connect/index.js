@@ -37,6 +37,7 @@ function handleConnectWs(ws, url) {
         config: rtcConfig,
         channelConfig: { 
             ordered: true,
+            maxRetransmits: 0
         },
         // Helps with NAT traversal
         trickle: true

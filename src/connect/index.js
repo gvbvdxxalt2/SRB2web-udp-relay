@@ -29,6 +29,7 @@ function handleConnectWs(ws, url) {
     
     var socketType = target.ip.includes(':') ? 'udp6' : 'udp4';
     var client = dgram.createSocket(socketType);
+    client.setRecvBufferSize(40 * 1024 * 1024);
     var canSend = true;
     
     var peerConn = new peer({ initiator: true, wrtc: wrtc, config: rtcConfig });

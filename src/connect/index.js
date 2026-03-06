@@ -51,6 +51,8 @@ function handleConnectWs(ws, url) {
     ws.send(JSON.stringify({ webrtc: true }));
 
     peerConn.on("connect", () => {
+        const channel = peerConn._channel;
+        channel.bufferedAmountLowThreshold = 400000;
         if (!canSend) return;
     });
 

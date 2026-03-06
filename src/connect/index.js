@@ -83,7 +83,6 @@ function handleConnectWs(ws, url) {
         canSend = false;
         try { ws.close(); client.close(); } catch(e) {}
         try{peerConn.destroy();}catch(e){}
-        clearInterval(tick_interval);
     };
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);

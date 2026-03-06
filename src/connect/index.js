@@ -73,32 +73,9 @@ function handleConnectWs(ws, url) {
         }catch(e){cleanup();}
     });
     
-    var packetQueue = [];
-    var MAX_PACKETS_PER_TICK = 5; // Adjust based on stability
-    var TICK_RATE = 5;
-    
     client.on('message', (msg) => {
-        if (msg.length < 200 && peerConn.connected) {
-            peerConn.send(msg);
-            return;
-        }
-        packetQueue.push(msg);
+        peerConn.send(msg);
     });
-    
-    var tick_interval = setInterval(() => {
-        if (!peerConn.connected || packetQueue.length === 0) return;
-    
-        if (peerConn._channel.bufferedAmount > 1024 * 512) return; 
-    
-        for (let i = 0; i < MAX_PACKETS_PER_TICK; i++) {
-            const nextPacket = packetQueue.shift();
-            if (nextPacket) {
-                peerConn.send(nextPacket);
-            } else {
-                break;
-            }
-        }
-    }, TICK_RATE);
 
     const cleanup = () => {
         if (!canSend) return;
@@ -107,6 +84,7 @@ function handleConnectWs(ws, url) {
         peerConn.destroy();
         clearInterval(tick_interval);
     };
+    ws.on('close', cleanup);
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);
 }

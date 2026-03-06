@@ -1,0 +1,20 @@
+{
+  "name": "SRB2web-udp-relay",
+  "version": "1.0.0",
+  "description": "A way to forward real SRB2 netgames into SRB2web",
+  "main": "index.js",
+  "repository": "https://github.com/gvbvdxxalt2/SRB2web-udp-relay",
+  "author": "Gvbvdxx",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "simple-peer": "^9.11.1",
+    "wrtc": "^0.4.7",
+    "ws": "^8.19.0"
+  }
+}

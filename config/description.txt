@@ -1,0 +1,1 @@
+This is a dedicated server designed to help forward to REAL SRB2 netgames in the browser.

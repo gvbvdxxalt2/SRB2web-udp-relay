@@ -58,11 +58,11 @@ function handleConnectWs(ws, url) {
     });
 
     ws.send(JSON.stringify({ ready: true }));
+    ws.send(JSON.stringify({ webrtc: true }));
     
     peerConn.on("connect", () => {
         const channel = peerConn._channel;
         channel.bufferedAmountLowThreshold = 99999;
-        ws.send(JSON.stringify({ webrtc: true }));
         if (!canSend) return;
     });
 

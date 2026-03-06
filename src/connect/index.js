@@ -74,7 +74,7 @@ function handleConnectWs(ws, url) {
     });
     
     var packetQueue = [];
-    var MAX_PACKETS_PER_TICK = 10; // Adjust based on stability
+    var MAX_PACKETS_PER_TICK = 3; // Adjust based on stability
     var TICK_RATE = 5; // 5ms interval
     
     client.on('message', (msg) => {

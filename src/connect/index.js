@@ -31,7 +31,18 @@ function handleConnectWs(ws, url) {
     var client = dgram.createSocket(socketType);
     var canSend = true;
     
-    var peerConn = new peer({ initiator: true, wrtc: wrtc, config: rtcConfig });
+    var peerConn = new peer({
+        initiator: true,
+        wrtc: wrtc,
+        config: rtcConfig,
+        channelConfig: { 
+            ordered: true,        // Keep this true for SRB2 game data
+            reliable: true,       // Force retransmission for lost packets
+            maxRetransmits: null  // Let WebRTC manage retransmissions indefinitely
+        },
+        // Helps with NAT traversal
+        trickle: true
+    });
 
     ws.on('message', (message) => {
         try {

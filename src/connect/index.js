@@ -29,7 +29,6 @@ function handleConnectWs(ws, url) {
     
     var socketType = target.ip.includes(':') ? 'udp6' : 'udp4';
     var client = dgram.createSocket(socketType);
-    client.setRecvBufferSize(8 * 1024 * 1024);
     var canSend = true;
     
     var peerConn = new peer({ initiator: true, wrtc: wrtc, config: rtcConfig });
@@ -54,6 +53,7 @@ function handleConnectWs(ws, url) {
     peerConn.on("connect", () => {
         const channel = peerConn._channel;
         channel.bufferedAmountLowThreshold = 999999999999;
+        client.setRecvBufferSize(15 * 1024 * 1024);
         if (!canSend) return;
     });
 

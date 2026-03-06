@@ -74,8 +74,8 @@ function handleConnectWs(ws, url) {
     });
     
     var packetQueue = [];
-    var MAX_PACKETS_PER_TICK = 3; // Adjust based on stability
-    var TICK_RATE = 15;
+    var MAX_PACKETS_PER_TICK = 5; // Adjust based on stability
+    var TICK_RATE = 5;
     
     client.on('message', (msg) => {
         if (msg.length < 200 && peerConn.connected) {
@@ -107,8 +107,6 @@ function handleConnectWs(ws, url) {
         peerConn.destroy();
         clearInterval(tick_interval);
     };
-
-    ws.on('close', cleanup);
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);
 }

@@ -38,7 +38,7 @@ function handleConnectWs(ws, url) {
         channelConfig: { 
             ordered: true,        // Keep this true for SRB2 game data
             reliable: true,       // Force retransmission for lost packets
-            maxRetransmits: null  // Let WebRTC manage retransmissions indefinitely
+            maxRetransmits: 9999  // Let WebRTC manage retransmissions indefinitely
         },
         // Helps with NAT traversal
         trickle: true

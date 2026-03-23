@@ -89,6 +89,10 @@ function handleConnectWs(ws, url) {
 
     peerConn.on('close', cleanup);
     peerConn.on('error', cleanup);
+
+    client.on('error', (err) => {
+        cleanup(); //Whoops! should of known to add this, now I got millions of errors in node js console.
+    });
 }
 
 module.exports = { handleConnectWs };
